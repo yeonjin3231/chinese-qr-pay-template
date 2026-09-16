@@ -1,0 +1,239 @@
+<!doctype html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="theme-color" content="#0b7a4b" />
+  <title>课堂支付 Kètáng Pay</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;600;700;800&family=Noto+Sans+SC:wght@500;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+  <div class="app-shell">
+    <header class="topbar">
+      <button class="brand" data-go="home" aria-label="홈으로">
+        <span class="brand-mark">付</span>
+        <span><strong>课堂支付</strong><small>Kètáng Pay · 교육용</small></span>
+      </button>
+      <button class="ghost small" id="resetDemoBtn">전체 초기화</button>
+    </header>
+
+    <main>
+      <section class="screen active" id="homeScreen">
+        <div class="hero">
+          <p class="eyebrow">中文购物体验</p>
+          <h1>중국어로 사고,<br><span>QR로 결제해요.</span></h1>
+          <p>클래스도조 칭찬포인트를 1점당 2元으로 바꿔 사용하는 수업용 모의 결제 앱입니다.</p>
+        </div>
+
+        <div class="role-grid">
+          <button class="role-card student" data-go="studentLoginScreen">
+            <span class="role-icon">我</span>
+            <span><strong>학생 결제</strong><small>잔액 확인 · QR 결제</small></span>
+            <b>进入</b>
+          </button>
+          <button class="role-card store" data-go="storeScreen">
+            <span class="role-icon">店</span>
+            <span><strong>상점 QR</strong><small>계산대에 띄워두기</small></span>
+            <b>打开</b>
+          </button>
+          <button class="role-card teacher" data-go="teacherLoginScreen">
+            <span class="role-icon">师</span>
+            <span><strong>교사 관리</strong><small>학생 · 잔액 · 거래 관리</small></span>
+            <b>管理</b>
+          </button>
+        </div>
+
+        <div class="notice">
+          <strong>课堂虚拟货币</strong>
+          <p>실제 화폐나 금융 거래와 무관한 교육용 체험입니다.</p>
+        </div>
+      </section>
+
+      <section class="screen" id="studentLoginScreen">
+        <button class="back" data-go="homeScreen">← 돌아가기</button>
+        <div class="panel compact">
+          <p class="eyebrow">学生登录</p>
+          <h2>학생 로그인</h2>
+          <label>반(팩) 선택
+            <select id="packSelect">
+              <option value="1">1팩</option>
+              <option value="2">2팩</option>
+              <option value="3">3팩</option>
+            </select>
+          </label>
+          <label>학생 선택
+            <select id="studentSelect"></select>
+          </label>
+          <label id="pinLabel">4자리 PIN
+            <input id="studentPin" inputmode="numeric" maxlength="4" placeholder="예: 1234" />
+          </label>
+          <label id="pinConfirmField" style="display:none">PIN 확인 (다시 한 번 입력)
+            <input id="studentPinConfirm" inputmode="numeric" maxlength="4" placeholder="다시 입력" />
+          </label>
+          <button class="primary" id="studentLoginBtn">登录 · 로그인</button>
+          <p class="helper" id="pinHelper">본인이 설정한 PIN을 입력하세요.</p>
+        </div>
+      </section>
+
+      <section class="screen" id="studentScreen">
+        <div class="student-header">
+          <button class="back light" data-go="homeScreen">← 나가기</button>
+          <p>你好，<strong id="studentName"></strong>！</p>
+        </div>
+        <div class="wallet-card">
+          <span>我的余额 · 현재 잔액</span>
+          <strong>¥<span id="studentBalance">0</span></strong>
+          <small>ClassDojo 포인트 × 2</small>
+        </div>
+        <div class="action-grid">
+          <button class="primary big" id="openScanBtn"><span>▦</span>扫码付款<br><small>QR 결제</small></button>
+          <button class="secondary big" id="manualPayBtn"><span>¥</span>输入金额<br><small>금액 입력</small></button>
+        </div>
+        <div class="panel">
+          <div class="panel-title"><h3>最近记录</h3><span>최근 결제</span></div>
+          <div id="studentTransactions" class="transaction-list"></div>
+        </div>
+      </section>
+
+      <section class="screen" id="scanScreen">
+        <button class="back" data-go="studentScreen">← 돌아가기</button>
+        <div class="panel">
+          <p class="eyebrow">扫码付款</p>
+          <h2>상점 QR을 스캔하세요</h2>
+          <div id="reader"></div>
+          <p class="helper">카메라 사용이 어려우면 아래 버튼을 눌러 결제할 수 있습니다.</p>
+          <button class="secondary" id="scanFallbackBtn">상점 QR 인식 완료로 진행</button>
+        </div>
+      </section>
+
+      <section class="screen" id="paymentScreen">
+        <button class="back" data-go="studentScreen">← 돌아가기</button>
+        <div class="panel compact">
+          <div class="store-mini"><span>店</span><div><b>中国超市</b><small>교실 중국어 상점</small></div></div>
+          <label>付款金额 · 결제 금액
+            <div class="money-input"><span>¥</span><input id="payAmount" type="number" min="1" step="1" placeholder="0" /></div>
+          </label>
+          <div class="quick-amounts">
+            <button data-amount="2">¥2</button><button data-amount="5">¥5</button><button data-amount="10">¥10</button><button data-amount="20">¥20</button>
+          </div>
+          <div class="balance-preview">결제 후 잔액 <strong>¥<span id="afterBalance">0</span></strong></div>
+          <button class="primary" id="confirmPayBtn">确认金额 · 금액 확인</button>
+        </div>
+      </section>
+
+      <section class="screen" id="phraseScreen">
+        <button class="back" data-go="paymentScreen">← 돌아가기</button>
+        <div class="panel compact">
+          <p class="eyebrow">常用会话 · 결제 전 회화</p>
+          <h2>이 표현을 써보세요</h2>
+          <p class="helper">결제 금액 ¥<b id="phraseAmount"></b></p>
+          <div class="phrase-block">
+            <div class="phrase-title">你 · 구매자</div>
+            <ul class="phrase-list">
+              <li><span class="cn">这个多少钱？</span><span class="py">Zhège duōshao qián?</span><span class="kr">이거 얼마예요?</span></li>
+              <li><span class="cn">太贵了。</span><span class="py">Tài guì le.</span><span class="kr">너무 비싸요.</span></li>
+              <li><span class="cn">便宜一点儿吧。</span><span class="py">Piányi yìdiǎnr ba.</span><span class="kr">조금 깎아 주세요.</span></li>
+              <li><span class="cn">我要这个。</span><span class="py">Wǒ yào zhège.</span><span class="kr">이걸 살게요.</span></li>
+              <li><span class="cn">我扫码付款。</span><span class="py">Wǒ sǎomǎ fùkuǎn.</span><span class="kr">QR로 결제할게요.</span></li>
+            </ul>
+          </div>
+          <button class="primary" id="finalPayBtn">确认支付 · 결제하기</button>
+        </div>
+      </section>
+
+      <section class="screen" id="successScreen">
+        <div class="success-wrap">
+          <div class="check">✓</div>
+          <p class="eyebrow">支付成功</p>
+          <h2>결제가 완료되었습니다</h2>
+          <div class="receipt">
+            <div><span>商店</span><b>中国超市</b></div>
+            <div><span>金额</span><b>¥<span id="successAmount"></span></b></div>
+            <div><span>余额</span><b>¥<span id="successBalance"></span></b></div>
+            <div><span>时间</span><b id="successTime"></b></div>
+          </div>
+          <p class="thanks">谢谢惠顾！</p>
+          <button class="primary" data-go="studentScreen">完成 · 완료</button>
+        </div>
+      </section>
+
+      <section class="screen" id="storeScreen">
+        <button class="back" data-go="homeScreen">← 돌아가기</button>
+        <div class="store-display">
+          <p class="eyebrow">中国超市</p>
+          <h2>请扫码付款</h2>
+          <p>QR코드를 스캔하여 결제하세요</p>
+          <div id="storeQr" class="qr-box"></div>
+          <div class="store-caption">课堂支付 · Kètáng Pay</div>
+          <button class="secondary" id="fullscreenBtn">계산대 전체 화면</button>
+        </div>
+      </section>
+
+      <section class="screen" id="teacherLoginScreen">
+        <button class="back" data-go="homeScreen">← 돌아가기</button>
+        <div class="panel compact">
+          <p class="eyebrow">教师管理</p>
+          <h2>교사 관리자</h2>
+          <label>관리자 PIN
+            <input id="teacherPin" inputmode="numeric" maxlength="4" placeholder="PIN 입력" />
+          </label>
+          <button class="primary" id="teacherLoginBtn">进入管理 · 관리 시작</button>
+        </div>
+      </section>
+
+      <section class="screen" id="teacherScreen">
+        <div class="teacher-title">
+          <button class="back" data-go="homeScreen">← 나가기</button>
+          <div><p class="eyebrow">教师管理</p><h2>교사 대시보드</h2></div>
+        </div>
+        <div class="stats-grid">
+          <div><span>학생</span><strong id="statStudents">0</strong></div>
+          <div><span>총 잔액</span><strong>¥<span id="statBalance">0</span></strong></div>
+          <div><span>결제 건수</span><strong id="statTx">0</strong></div>
+        </div>
+        <div class="panel">
+          <div class="panel-title"><h3>学生名单导入</h3><span>엑셀 업로드</span></div>
+          <label>반(팩) 선택 <small>(파일에 "팩" 열이 없을 때 이 값으로 채워집니다)</small>
+            <select id="rosterPackSelect">
+              <option value="1">1팩</option>
+              <option value="2">2팩</option>
+              <option value="3">3팩</option>
+            </select>
+          </label>
+          <label>엑셀 · CSV 파일
+            <input type="file" id="rosterFile" accept=".xlsx,.xls,.csv" />
+          </label>
+          <p class="helper">첫 줄에 "이름"(또는 "학생")과 "포인트"(또는 "보상") 열이 있어야 합니다. 업로드하면 선택한 팩의 기존 명단이 파일 내용으로 교체됩니다.</p>
+        </div>
+        <div class="panel">
+          <div class="panel-title"><h3>学生积分</h3><button class="secondary small" id="addStudentBtn">+ 학생 추가</button></div>
+          <div class="table-wrap"><table><thead><tr><th>팩</th><th>학생</th><th>도조</th><th>환전 잔액</th><th>PIN</th><th></th></tr></thead><tbody id="studentTableBody"></tbody></table></div>
+        </div>
+        <div class="panel">
+          <div class="panel-title"><h3>交易记录</h3><button class="ghost small" id="clearTransactionsBtn">기록 비우기</button></div>
+          <div id="teacherTransactions" class="transaction-list"></div>
+        </div>
+      </section>
+    </main>
+  </div>
+
+  <dialog id="studentDialog">
+    <form method="dialog" id="studentForm">
+      <h3>학생 추가</h3>
+      <label>이름<input id="newStudentName" required /></label>
+      <label>반(팩)<select id="newStudentPack"><option value="1">1팩</option><option value="2">2팩</option><option value="3">3팩</option></select></label>
+      <label>클래스도조 포인트<input id="newStudentPoints" type="number" min="0" required /></label>
+      <p class="helper">PIN은 학생이 처음 로그인할 때 직접 정합니다.</p>
+      <div class="dialog-actions"><button value="cancel" class="ghost">취소</button><button value="default" class="primary" id="saveStudentBtn">저장</button></div>
+    </form>
+  </dialog>
+
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+  <script src="https://unpkg.com/html5-qrcode" type="text/javascript"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+  <script src="app.js"></script>
+</body>
+</html>

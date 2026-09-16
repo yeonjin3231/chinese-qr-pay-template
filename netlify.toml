@@ -1,0 +1,9 @@
+[build]
+  command = "node scripts/build-sites.mjs"
+  publish = "."
+
+[[headers]]
+  for = "/*"
+  [headers.values]
+    X-Frame-Options = "SAMEORIGIN"
+    X-Content-Type-Options = "nosniff"
